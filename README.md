@@ -1,5 +1,7 @@
 # CorrigIA
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23055759.svg)](https://doi.org/10.5281/zenodo.23055759)
+
 **Aplicación:** https://fborrasumh.github.io/corrigia/
 
 Corrección asistida de **exámenes manuscritos** para profesorado universitario. Escaneas o subes las copias de tus estudiantes; la IA lee cada respuesta, la puntúa criterio a criterio con **tu baremo** y redacta un comentario para cada estudiante. Tú revisas lo que propone, ajustas lo que haga falta y exportas las notas, los comentarios y un informe de la clase. Aplicación de un solo fichero (`index.html`), sin servidor ni cuenta, con el diseño de la familia Forja.
@@ -33,6 +35,12 @@ Las imágenes de las copias se envían a OpenAI con la clave del profesor (guard
 ## Límites
 
 La calidad de la lectura depende del modelo y de la letra. Antes de usarla en un examen real, corrige con ella unas cuantas copias ya calificadas a mano y compara. La IA propone; la nota la pone el profesor.
+
+## Cómo citar
+
+Borrás Rocher, F. (2026). *CorrigIA* (versión 1.0.0) [Software]. Universidad Miguel Hernández de Elche. https://doi.org/10.5281/zenodo.23055759
+
+El DOI es el de concepto: apunta siempre a la última versión. GitHub ofrece la cita en APA y BibTeX con el botón *Cite this repository*, a partir de `CITATION.cff`.
 
 Forma parte del catálogo [Herramientas IA para la academia](https://fborrasumh.github.io/ia/).
 
