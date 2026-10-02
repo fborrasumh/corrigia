@@ -440,10 +440,27 @@ footer hr{border:0;border-top:1px solid var(--linea);margin:0 0 14px}
 .copia .st{font-size:11.5px;font-weight:800;margin-top:4px}
 .st.pend{color:var(--gris)}.st.run{color:#C98200}.st.ok{color:#1F6FB2}.st.rev{color:var(--forjado)}.st.err{color:var(--brasa)}.st.dud{color:var(--brasa)}
 .revgrid{display:grid;grid-template-columns:1.05fr 1fr;gap:16px;align-items:start}
-@media(max-width:980px){.revgrid{grid-template-columns:1fr}}
-.pages{position:sticky;top:80px;max-height:calc(100vh - 170px);overflow:auto;background:#fff;border:1px solid var(--linea);border-radius:14px;padding:8px}
-.pages img{width:100%;display:block;border-radius:8px;margin-bottom:8px;cursor:zoom-in;border:1px solid var(--linea-2)}
-.pages.zoom img{width:180%;cursor:zoom-out}
+.revgrid>*{min-width:0}
+@media(max-width:980px){.revgrid{grid-template-columns:minmax(0,1fr)}}
+.pages-wrap{position:sticky;top:80px;background:#fff;border:1px solid var(--linea);border-radius:14px;overflow:hidden}
+.pages-bar{display:flex;gap:6px;align-items:center;padding:6px 8px;background:var(--papel);border-bottom:1px solid var(--linea);font-size:12.5px;font-weight:700;color:var(--acero)}
+.pages-bar .grow{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pages-bar button{border:1.5px solid var(--linea);background:#fff;border-radius:8px;padding:3px 9px;font:700 12.5px var(--texto);cursor:pointer;color:var(--acero);white-space:nowrap}
+.pages-bar button:hover{border-color:var(--acero-claro)}
+.pages-bar .pm{background:var(--tinta);border-color:var(--tinta);color:#fff}
+.pages{max-height:calc(100vh - 215px);overflow:auto;padding:8px}
+.pages img{width:calc(var(--pz,100) * 1%);max-width:none;display:block;border-radius:8px;margin-bottom:8px;cursor:zoom-in;border:1px solid var(--linea-2)}
+@media(max-width:980px){.pages-wrap{position:static}.pages{max-height:62vh}}
+/* imagen minimizada: queda una tira con el botón para volver a verla y las preguntas ocupan todo el ancho */
+.revgrid.min{grid-template-columns:54px minmax(0,1fr)}
+.revgrid.min .pages{display:none}
+.revgrid.min .pages-bar{flex-direction:column;padding:10px 4px;border-bottom:0}
+.revgrid.min .pages-bar .grow,.revgrid.min .pages-bar .zb{display:none}
+.revgrid.min .pages-bar .pm{writing-mode:vertical-rl;padding:10px 6px}
+@media(max-width:980px){.revgrid.min{grid-template-columns:minmax(0,1fr)}.revgrid.min .pages-bar{flex-direction:row;padding:6px 8px}.revgrid.min .pages-bar .pm{writing-mode:horizontal-tb;padding:4px 10px}.revgrid.min .pages-bar .grow{display:block}}
+/* pantalla de revisión: la columna «Copias» no debe imponer 230px en móvil */
+.colsrev{grid-template-columns:230px minmax(0,1fr)}
+@media(max-width:900px){.colsrev{grid-template-columns:minmax(0,1fr)}.colsrev .lista{flex-direction:row;overflow-x:auto;padding-bottom:4px}.colsrev .lista button{flex:none;min-width:150px}}
 .qr{background:#fff;border:1px solid var(--linea);border-left:4px solid var(--linea);border-radius:14px;padding:12px 14px;margin-bottom:10px}
 .qr.alta{border-left-color:var(--forjado)}.qr.media{border-left-color:#F59E0B}.qr.baja{border-left-color:var(--brasa)}.qr.dudosa{box-shadow:0 0 0 2px rgba(228,87,46,.35)}
 .qr .h{display:flex;gap:8px;align-items:center}.qr .h b{flex:1;font-size:14.5px}
@@ -761,7 +778,7 @@ table.bp td.cell{padding:0;min-width:64px}
 <section class="screen" data-step="4">
   <header class="sh" style="--c:#0E8C7A"><div class="sh-ico"><svg class="i"><use href="#i-eye"/></svg></div>
     <div><p class="sh-step">Paso 4 de 5</p><h2 id="revTitle">Revisión</h2><p class="sh-lede" id="revLede">Comprueba la corrección de cada copia. Cambia cualquier punto o comentario y marca la copia como revisada.</p></div></header>
-  <div class="cols" style="grid-template-columns:230px 1fr">
+  <div class="cols colsrev">
     <aside><div class="card sticky" style="padding:12px"><p class="sublab" style="margin-top:0">Copias</p><div class="lista" id="lista"></div></div></aside>
     <div id="revision"></div>
   </div>
@@ -1034,6 +1051,13 @@ $('btnRevisarYa').onclick = () => { if(P.copias.some(c => c.res)) go(4); else to
 
 /* ══════════ PASO 4 · REVISIÓN ══════════ */
 const CUMPLE = {si:'Cumple', parcial:'En parte', no:'No cumple'};
+let pz = 100;   // zoom de la imagen del examen (%)
+const imgMin = () => { try{ return localStorage.getItem('corrigia_imgmin') === '1'; }catch(e){ return false; } };
+function toggleImgMin(){
+  const m = !imgMin(); try{ localStorage.setItem('corrigia_imgmin', m ? '1' : '0'); }catch(e){}
+  const g = $('revgrid'), b = $('pgMin'); if(!g || !b) return;
+  g.classList.toggle('min', m); b.textContent = m ? 'Mostrar imagen' : 'Minimizar'; b.setAttribute('aria-expanded', String(!m));
+}
 function pintaRevision(){
   const corr = P.copias.map((c,i) => ({c, i})).filter(x => x.c.res);
   if(!corr.length){ $('revision').innerHTML = '<p class="empty">No hay copias corregidas.</p>'; $('lista').innerHTML = ''; return; }
@@ -1041,8 +1065,8 @@ function pintaRevision(){
   $('lista').innerHTML = corr.map(({c,i}) => `<button type="button" class="${i === actual ? 'on' : ''}" data-i="${i}"><span>${esc(c.nombre)}</span><span>${c.revisada ? '✓' : c.res.dudosa ? '⚠' : ''}</span><span class="nt">${fmt(nota(c))}</span></button>`).join('');
   $$('#lista [data-i]').forEach(b => b.onclick = () => { actual = +b.dataset.i; pintaRevision(); window.scrollTo({top:0}); });
   const c = P.copias[actual], R = c.res, pend = corr.filter(x => !x.c.revisada).length;
-  $('revTitle').textContent = c.nombre; $('revLede').textContent = `${pend} copia(s) por revisar de ${corr.length}. Pulsa una página para ampliarla.`;
-  $('revision').innerHTML = `<div class="revgrid"><div class="pages" id="pages">${c.paginas.map((u,k) => `<img src="${u}" alt="Página ${k + 1} de ${esc(c.nombre)}">`).join('')}</div><div>
+  $('revTitle').textContent = c.nombre; $('revLede').textContent = `${pend} copia(s) por revisar de ${corr.length}. Pulsa una página para ampliarla; con «Minimizar» ves las preguntas a todo el ancho.`;
+  $('revision').innerHTML = `<div class="revgrid${imgMin() ? ' min' : ''}" id="revgrid"><div class="pages-wrap"><div class="pages-bar"><span class="grow">Examen · ${c.paginas.length} pág.</span><button type="button" class="zb" data-pz="-" aria-label="Reducir la imagen">−</button><button type="button" class="zb" data-pz="+" aria-label="Ampliar la imagen">+</button><button type="button" class="zb" data-pz="0">Ajustar</button><button type="button" class="pm" id="pgMin" aria-expanded="${!imgMin()}" aria-controls="pages" title="Minimizar o mostrar la imagen del examen (Alt+I)">${imgMin() ? 'Mostrar imagen' : 'Minimizar'}</button></div><div class="pages" id="pages" style="--pz:${pz}">${c.paginas.map((u,k) => `<img src="${u}" alt="Página ${k + 1} de ${esc(c.nombre)}">`).join('')}</div></div><div>
     <div class="card" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><div style="flex:1"><div class="field" style="margin:0"><label for="revNombre">Estudiante</label><input type="text" id="revNombre" value="${esc(c.nombre)}"></div>${R.nombreLeido && R.nombreLeido !== c.nombre ? `<p class="help" style="margin:4px 0 0">Nombre leído en la copia: ${esc(R.nombreLeido)}</p>` : ''}</div><div style="text-align:center"><div style="font:800 34px var(--display);color:${nota(c) >= (P.escala || maxTot()) / 2 ? 'var(--forjado)' : 'var(--brasa)'}">${fmt(nota(c))}</div><div class="help" style="margin:0">sobre ${escalaTxt()} · ${fmt(R.total)} de ${fmt(maxTot())} puntos</div></div></div>
     ${R.avisos?.length ? `<div class="aviso">${R.avisos.map(esc).join('<br>')}</div>` : ''}
     ${P.preguntas.map((q,k) => { const rq = R.preguntas[k], pc = rq.pts / q.puntos; return `<div class="qr ${pc >= .8 ? 'alta' : pc >= .5 ? 'media' : 'baja'} ${rq.dudosa ? 'dudosa' : ''}"><div class="h"><b>${k + 1}. ${esc(q.enunciado.length > 140 ? q.enunciado.slice(0, 140) + '…' : q.enunciado)}</b><span class="sc">${fmt(rq.pts)}<small style="font:600 12px var(--texto);color:var(--gris)">/${fmt(q.puntos)}</small></span></div>
@@ -1052,7 +1076,10 @@ function pintaRevision(){
       <div class="just">${esc(rq.justificacion)}</div></div>`; }).join('')}
     <div class="card fb"><h3 style="margin-top:0">Comentario para el estudiante</h3><label>Punto fuerte</label><textarea data-fb="fuerte">${esc(R.feedback.fuerte)}</textarea><label>Principal dificultad</label><textarea data-fb="dificultad">${esc(R.feedback.dificultad)}</textarea><label>Consejo</label><textarea data-fb="consejo">${esc(R.feedback.consejo)}</textarea></div>
     <div class="actions"><button class="btn btn-primary" id="btnRevisada" type="button">${ico('check')}${c.revisada ? 'Revisada · ir a la siguiente' : 'Marcar revisada y seguir'}</button><button class="btn btn-ghost btn-sm" id="btnRecorregir" type="button">${ico('refresh')}Volver a corregir</button></div></div></div>`;
-  $('pages').onclick = e => { if(e.target.tagName === 'IMG') $('pages').classList.toggle('zoom'); };
+  const setPz = v => { pz = Math.max(50, Math.min(300, v)); $('pages').style.setProperty('--pz', pz); };
+  $('pages').onclick = e => { if(e.target.tagName === 'IMG') setPz(pz > 100 ? 100 : 180); };
+  $$('#revision [data-pz]').forEach(b => b.onclick = () => setPz(b.dataset.pz === '0' ? 100 : pz + (b.dataset.pz === '+' ? 25 : -25)));
+  $('pgMin').onclick = toggleImgMin;
   $('revNombre').oninput = () => { c.nombre = $('revNombre').value; guarda(); };
   const recalc = () => { R.preguntas.forEach(rq => rq.pts = r2(rq.criterios.reduce((a,x) => a + x.pts, 0))); R.total = r2(R.preguntas.reduce((a,x) => a + x.pts, 0)); guarda(); pintaRevision(); };
   $$('#revision [data-cp]').forEach(x => x.onchange = () => { const [k,j] = x.dataset.cp.split(':').map(Number), mx = P.preguntas[k].criterios[j].pts, v = Math.max(0, Math.min(mx, +x.value || 0)); R.preguntas[k].criterios[j].pts = v; R.preguntas[k].criterios[j].cumple = v >= mx ? 'si' : v > 0 ? 'parcial' : 'no'; R.preguntas[k].editada = true; recalc(); });
@@ -1153,7 +1180,8 @@ const GLOS = [['Baremo','Preguntas con sus puntos y criterios observables que su
 $('glos').innerHTML = GLOS.map(g => `<div><b>${esc(g[0])}</b><span>${esc(g[1])}</span></div>`).join('');
 $('btnHelp').onclick = () => $('mHelp').classList.add('on');
 $$('.modal').forEach(m => m.addEventListener('click', e => { if(e.target === m || e.target.hasAttribute('data-close')) m.classList.remove('on'); }));
-document.addEventListener('keydown', e => { if(e.key === 'Escape') $$('.modal').forEach(m => m.classList.remove('on')); if(step === 4 && e.altKey && (e.key === 'ArrowDown' || e.key === 'ArrowUp')){ const cs = P.copias.map((c,i) => c.res ? i : -1).filter(i => i >= 0), k = cs.indexOf(actual) + (e.key === 'ArrowDown' ? 1 : -1); if(cs[k] != null){ actual = cs[k]; pintaRevision(); } } });
+document.addEventListener('keydown', e => { if(e.key === 'Escape') $$('.modal').forEach(m => m.classList.remove('on')); if(step === 4 && e.altKey && (e.key === 'i' || e.key === 'I')){ e.preventDefault(); toggleImgMin(); }
+  if(step === 4 && e.altKey && (e.key === 'ArrowDown' || e.key === 'ArrowUp')){ const cs = P.copias.map((c,i) => c.res ? i : -1).filter(i => i >= 0), k = cs.indexOf(actual) + (e.key === 'ArrowDown' ? 1 : -1); if(cs[k] != null){ actual = cs[k]; pintaRevision(); } } });
 $('apiKey').value = localStorage.getItem('ia_openai_key') || ''; $('modelo').value = localStorage.getItem('corrigia_model') || 'gpt-6-luna';
 cargaForm(); go(0);
 </script>
