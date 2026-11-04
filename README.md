@@ -4,43 +4,48 @@
 
 **Aplicación:** https://fborrasumh.github.io/corrigia/
 
-Corrección asistida de **exámenes manuscritos** para profesorado universitario. Escaneas o subes las copias de tus estudiantes; la IA lee cada respuesta, la puntúa criterio a criterio con **tu baremo** y redacta un comentario para cada estudiante. Tú revisas lo que propone, ajustas lo que haga falta y exportas las notas, los comentarios y un informe de la clase. Aplicación de un solo fichero (`index.html`), sin servidor ni cuenta, con el diseño de la familia Forja.
+Corrección asistida de **exámenes manuscritos** para profesorado de cualquier asignatura. Escribes el baremo, subes las copias escaneadas o fotografiadas y la IA transcribe cada respuesta, puntúa criterio a criterio y redacta un comentario para cada estudiante. La nota la calcula el código; tú revisas y decides. Un solo fichero (`index.html`), sin servidor ni cuenta, en **español, inglés y portugués**.
 
-Recoge las funcionalidades de herramientas comerciales como Examino, con garantías adicionales pensadas para la evaluación universitaria.
+## Cuatro pasos
 
-## Cinco pasos
+1. **El baremo.** Para cada pregunta: enunciado, respuesta esperada y criterios observables con sus puntos. Los puntos de la pregunta son la suma de sus criterios. La nota final se reescala a la escala que elijas (por defecto, sobre 10).
+2. **Las copias.** Un PDF o una foto por estudiante, o un único PDF con todo el lote indicando cuántas páginas tiene cada copia.
+3. **Corrección y revisión.** La IA corrige copia a copia; tú ves la copia junto a la corrección, cambias cualquier puntuación (la nota se recalcula), editas el comentario y marcas la copia como revisada.
+4. **Resultados.** Media, mediana, desviación típica, aprobados y dominio por pregunta. Descarga de notas en CSV (Excel) e informe en Word con la nota y el comentario de cada estudiante.
 
-1. **El baremo.** Para cada pregunta: su enunciado, sus puntos, la respuesta esperada y criterios que suman esos puntos. La IA puede proponer el baremo a partir del enunciado (y la solución) en PDF, Word o foto.
-2. **Las copias.** Tres formas de cargarlas:
-   - un PDF con todo el lote, que se divide según las páginas de cada copia;
-   - un fichero por estudiante;
-   - fotos con la cámara del móvil.
+## Qué hace la IA y qué hace el código
 
-   Se pueden unir copias, quitar páginas y poner nombres.
-3. **La corrección.** Por cada pregunta, la IA transcribe lo escrito, indica qué criterios cumple y justifica la puntuación. Además, redacta un comentario: punto fuerte, dificultad y consejo.
-4. **La revisión.** Copia y corrección lado a lado. Cambias cualquier criterio y la nota se recalcula; editas el comentario y marcas la copia como revisada.
-5. **Los resultados.** Media, mediana, desviación típica, aprobados, histograma, dominio por pregunta y ejercicios de refuerzo a partir de los errores más repetidos. Exportación de notas a Excel (CSV), informes individuales en Word, informe de la clase en Word y copia completa en JSON.
+- **La IA** lee las imágenes, transcribe, propone puntos por criterio, los justifica y redacta el comentario.
+- **El código** busca cada pregunta y criterio por su identificador, recorta al máximo los puntos que lo superan, pone a 0 lo que la IA no puntúa, suma y calcula la nota. Nunca toma una nota suelta de la IA. Marca como **dudosa** una respuesta ilegible, de confianza baja, sin transcripción o con puntos sin respuesta, y avisa de cada ajuste.
+- **El profesor** decide: las exportaciones indican qué notas no ha revisado.
 
-## Garantías
+## Privacidad
 
-- **La nota la calcula la app**, sumando los criterios del baremo: nunca se toma una cifra suelta de la IA. Si la IA puntúa un criterio por encima de su máximo, se recorta y se avisa.
-- **Lo dudoso no pasa sin mirar.** Las respuestas ilegibles, de baja confianza o sin transcripción se marcan, y las exportaciones indican qué notas no ha revisado el profesor.
-- **Anonimización** activa por defecto: se tapa la cabecera de la primera página en la imagen que se envía a la IA.
-- **Ejemplo completo sin clave**: tres copias manuscritas simuladas de un parcial de Bioestadística.
-
-## Protección de datos
-
-Las imágenes de las copias se envían a OpenAI con la clave del profesor (guardada en `localStorage` como `ia_openai_key`); no hay servidor intermedio. Todo lo demás, incluidas las imágenes y las correcciones, se guarda en IndexedDB del navegador. **Antes de usarla con estudiantes reales, consulta con tu universidad** si ese tratamiento está cubierto (acuerdo con el proveedor, información al estudiantado) y mantén la anonimización activa.
+Las imágenes de las copias y el baremo se envían a tu proveedor de IA (OpenAI, Google Gemini o Anthropic Claude) con tu propia clave; no hay servidor intermedio. Por defecto se **tapa la franja superior de la primera página** (donde suele ir el nombre) antes de enviarla, y antes del primer envío ves la imagen tal como sale. Más allá de esa franja, las imágenes no se pueden enmascarar. Todo lo demás (baremo, copias, correcciones y clave) se guarda solo en el navegador (IndexedDB y `localStorage`). **Antes de usarla con estudiantes reales, consulta con tu universidad** si ese tratamiento está cubierto (acuerdo con el proveedor, información al estudiantado).
 
 ## Límites
 
-La calidad de la lectura depende del modelo y de la letra. Antes de usarla en un examen real, corrige con ella unas cuantas copias ya calificadas a mano y compara. La IA propone; la nota la pone el profesor.
+- La calidad de la lectura depende del modelo (debe leer imágenes) y de la letra. No se ha probado con una clave real en esta versión: las pruebas usan una IA simulada.
+- Antes de usarla en un examen real, corrige con ella unas cuantas copias ya calificadas a mano y compara.
+- La IA propone; la nota la pone el profesor.
+
+## Ejemplo sin clave
+
+«Ver un ejemplo» carga tres copias manuscritas simuladas, con su corrección precalculada, en el idioma de la interfaz. Una tiene una respuesta dudosa y en otra el código recorta una puntuación fuera de rango.
+
+## Novedades de la versión 2.0.0
+
+Rediseño con el sistema Forja: más simple (cuatro pasos, una sola llamada de IA por copia), para cualquier asignatura, en tres idiomas y con tres proveedores de IA. Se retiran la propuesta automática de criterios, los ejercicios de refuerzo y la copia JSON.
 
 ## Cómo citar
 
-Borrás Rocher, F. (2026). *CorrigIA* (versión 1.0.0) [Software]. Universidad Miguel Hernández de Elche. https://doi.org/10.5281/zenodo.23055759
+Borrás Rocher, F. (2026). *CorrigIA* (versión 2.0.0) [Software]. Universidad Miguel Hernández de Elche. https://doi.org/10.5281/zenodo.23055759
 
 El DOI es el de concepto: apunta siempre a la última versión. GitHub ofrece la cita en APA y BibTeX con el botón *Cite this repository*, a partir de `CITATION.cff`.
+
+## Autoría
+
+Fernando Borrás Rocher · Universidad Miguel Hernández de Elche · ORCID [0000-0002-5519-4573](https://orcid.org/0000-0002-5519-4573)
 
 Forma parte del catálogo [Herramientas IA para la academia](https://fborrasumh.github.io/ia/).
 
